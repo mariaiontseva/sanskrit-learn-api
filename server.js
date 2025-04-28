@@ -20,13 +20,21 @@ app.use(cors({
 app.use(express.json());
 
 // Initialize OpenAI
+if (!process.env.OPENAI_API_KEY) {
+  console.error('ERROR: OPENAI_API_KEY environment variable is not set');
+  process.exit(1);
+}
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
 // Health check endpoint
 app.get('/', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ 
+    status: 'ok',
+    apiKeySet: !!process.env.OPENAI_API_KEY
+  });
 });
 
 // Chat endpoint
