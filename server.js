@@ -1,10 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const OpenAI = require('openai');
+import express from 'express';
+import cors from 'cors';
+import OpenAI from 'openai';
+import dotenv from 'dotenv';
 
-// Load environment variables
-dotenv.config();
+// Only load dotenv in development
+const env = process.env.NODE_ENV || 'development';
+if (env !== 'production') {
+  dotenv.config();
+}
 
 // Debug environment variables
 console.log('DEBUG: Environment variables:');
@@ -27,24 +30,17 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Initialize OpenAI with more detailed error handling
-try {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY environment variable is not set');
-  }
-  
-  if (!process.env.OPENAI_API_KEY.startsWith('sk-')) {
-    throw new Error('OPENAI_API_KEY appears to be invalid (should start with sk-)');
-  }
-
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-  });
-  console.log('OpenAI client initialized successfully');
-} catch (error) {
-  console.error('Error initializing OpenAI client:', error.message);
-  // Don't exit immediately to allow debugging
+// Initialize OpenAI at top-level scope
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY environment variable is not set');
 }
+if (!process.env.OPENAI_API_KEY.startsWith('sk-')) {
+  throw new Error('OPENAI_API_KEY appears to be invalid (should start with sk-)');
+}
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+console.log('OpenAI client initialized successfully');
 
 // Health check endpoint with debug info
 app.get('/', (req, res) => {
